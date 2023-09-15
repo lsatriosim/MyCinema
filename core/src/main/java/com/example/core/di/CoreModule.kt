@@ -11,6 +11,7 @@ import com.example.core.domain.usecase.MovieUseCase
 import com.example.core.utils.AppExecutors
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
+import okhttp3.CertificatePinner
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -36,6 +37,11 @@ val databaseModule = module {
 
 val networkModule = module{
     single {
+        val hostname = "api.themoviedb.org"
+        val certificatePinner = CertificatePinner.Builder()
+            .add(hostname, "sha256/5VLcahb6x4EvvFrCF2TePZulWqrLHS2jCg9Ywv6JHog=")
+            .build()
+
         OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
             .addInterceptor(Interceptor { chain ->
@@ -46,6 +52,7 @@ val networkModule = module{
                 chain.proceed(requestHeaders)})
             .connectTimeout(120, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS)
+            .certificatePinner(certificatePinner)
             .build()
     }
     single{
